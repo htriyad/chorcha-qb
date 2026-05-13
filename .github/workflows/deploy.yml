@@ -25,13 +25,9 @@ jobs:
       - name: Build frontend
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
-        run: |
-          cd artifacts/chorcha-decoder
-          PORT=3000 BASE_PATH=/ node_modules/.bin/vite build --config vite.config.ts
+        run: pnpm --filter @workspace/chorcha-decoder run build
 
       - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: |
-          cd artifacts/chorcha-decoder
-          node_modules/.bin/wrangler pages deploy dist/public --project-name=examly --branch=main
+        run: pnpm dlx wrangler@latest pages deploy artifacts/chorcha-decoder/dist/public --project-name=examly --branch=main
