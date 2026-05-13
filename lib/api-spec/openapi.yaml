@@ -1,0 +1,576 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Folder Manager API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: folders
+    description: Folder operations
+  - name: questionSets
+    description: Question set operations
+  - name: chorcha
+    description: Chorcha decode operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /folders:
+    get:
+      operationId: listFolders
+      tags: [folders]
+      summary: List folders
+      parameters:
+        - name: parentId
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of folders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Folder"
+    post:
+      operationId: createFolder
+      tags: [folders]
+      summary: Create a new folder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FolderInput"
+      responses:
+        "201":
+          description: Created folder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /folders/stats:
+    get:
+      operationId: getFolderStats
+      tags: [folders]
+      summary: Get folder statistics
+      responses:
+        "200":
+          description: Folder statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FolderStats"
+
+  /folders/reorder:
+    post:
+      operationId: reorderFolders
+      tags: [folders]
+      summary: Reorder folders by setting positions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FolderReorderInput"
+      responses:
+        "200":
+          description: Reordered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                required:
+                  - ok
+
+  /folders/{id}:
+    get:
+      operationId: getFolder
+      tags: [folders]
+      summary: Get a single folder by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Folder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateFolder
+      tags: [folders]
+      summary: Update a folder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FolderUpdate"
+      responses:
+        "200":
+          description: Updated folder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteFolder
+      tags: [folders]
+      summary: Delete a folder and all its descendants
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /folders/{id}/sets:
+    get:
+      operationId: listQuestionSets
+      tags: [questionSets]
+      summary: List question sets in a folder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of question sets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QuestionSet"
+
+  /sets/{id}:
+    get:
+      operationId: getQuestionSet
+      tags: [questionSets]
+      summary: Get a question set with its questions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Question set with questions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionSetDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteQuestionSet
+      tags: [questionSets]
+      summary: Delete a question set and its questions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /chorcha/decode-to-folder:
+    post:
+      operationId: decodeToFolder
+      tags: [chorcha]
+      summary: Decode a Chorcha URL and save questions into a folder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DecodeToFolderInput"
+      responses:
+        "201":
+          description: Decoded and saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionSet"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: Upstream fetch failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /folders/{id}/breadcrumb:
+    get:
+      operationId: getFolderBreadcrumb
+      tags: [folders]
+      summary: Get breadcrumb path for a folder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Breadcrumb path
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FolderBreadcrumb"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Folder:
+      type: object
+      required:
+        - id
+        - name
+        - color
+        - icon
+        - style
+        - position
+        - childCount
+        - createdAt
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        parentId:
+          type: ["integer", "null"]
+        color:
+          type: string
+        icon:
+          type: string
+          description: Lucide icon name (e.g. briefcase, star, heart)
+        style:
+          type: string
+          description: "Card style: default | square | big | flat | wide"
+        position:
+          type: integer
+          description: Sort order position (lower = first)
+        childCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    FolderBreadcrumb:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+    FolderInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+        parentId:
+          type: ["integer", "null"]
+        color:
+          type: string
+        icon:
+          type: string
+        style:
+          type: string
+
+    FolderUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        color:
+          type: string
+        icon:
+          type: string
+        style:
+          type: string
+
+    FolderReorderInput:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - position
+            properties:
+              id:
+                type: integer
+              position:
+                type: integer
+
+    FolderStats:
+      type: object
+      required:
+        - totalFolders
+        - rootFolders
+        - maxDepth
+      properties:
+        totalFolders:
+          type: integer
+        rootFolders:
+          type: integer
+        maxDepth:
+          type: integer
+
+    QuestionSet:
+      type: object
+      required:
+        - id
+        - folderId
+        - name
+        - totalQuestions
+        - createdAt
+      properties:
+        id:
+          type: integer
+        folderId:
+          type: integer
+        name:
+          type: string
+        examType:
+          type: ["string", "null"]
+        totalQuestions:
+          type: integer
+        sourceUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    QuestionOption:
+      type: object
+      required:
+        - letter
+        - text
+      properties:
+        letter:
+          type: string
+        text:
+          type: string
+
+    QuestionPart:
+      type: object
+      required:
+        - key
+        - label
+        - text
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        text:
+          type: string
+        solution:
+          type: ["string", "null"]
+        aiSolution:
+          type: ["string", "null"]
+
+    Question:
+      type: object
+      required:
+        - id
+        - setId
+        - chorchaId
+        - questionIndex
+        - type
+        - questionText
+        - options
+        - parts
+        - stemImages
+        - hidden
+        - createdAt
+      properties:
+        id:
+          type: integer
+        setId:
+          type: integer
+        chorchaId:
+          type: string
+        questionIndex:
+          type: integer
+        type:
+          type: string
+        questionText:
+          type: string
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestionOption"
+        parts:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestionPart"
+        answer:
+          type: ["string", "null"]
+        solution:
+          type: ["string", "null"]
+        stemImages:
+          type: array
+          items:
+            type: string
+        aiExplanation:
+          type: ["string", "null"]
+        hidden:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    QuestionSetDetail:
+      type: object
+      required:
+        - set
+        - questions
+      properties:
+        set:
+          $ref: "#/components/schemas/QuestionSet"
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Question"
+
+    DecodeToFolderInput:
+      type: object
+      required:
+        - folderId
+        - input
+        - token
+      properties:
+        folderId:
+          type: integer
+        input:
+          type: string
+          description: Chorcha read URL or question-bank URL
+        token:
+          type: string
+          description: Chorcha session token
+        name:
+          type: string
+          description: Optional name override for the question set
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
