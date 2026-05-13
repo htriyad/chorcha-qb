@@ -497,13 +497,13 @@ function QuestionCard({ q, index, totalCount, onUpdated, onDeleted, onReorderToP
           </div>
         )}
 
-        {effectiveShowAnswer && solution && (
+        {!isSq && effectiveShowAnswer && solution && (
           <div className="ml-10 p-3 rounded-xl bg-white/4 border border-white/8">
             <p className="text-xs font-semibold text-white/35 mb-1.5 uppercase tracking-wide">Solution</p>
             <div className="text-sm text-white/70"><MathText text={solution} /></div>
           </div>
         )}
-        {effectiveShowAnswer && aiExplanation && (
+        {!isSq && effectiveShowAnswer && aiExplanation && (
           <div className="ml-10 p-3 rounded-xl bg-purple-500/5 border border-purple-500/15">
             <p className="text-xs font-semibold text-purple-400/50 mb-1.5 uppercase tracking-wide">AI Explanation</p>
             <div className="text-sm text-white/65"><MathText text={aiExplanation} /></div>
@@ -512,7 +512,7 @@ function QuestionCard({ q, index, totalCount, onUpdated, onDeleted, onReorderToP
 
         {isCq && parts.length > 0 && (
           <div className="ml-10 space-y-2">
-            {viewMode === "practice" && (
+            {viewMode === "practice" && parts.some(p => p.solution || p.aiSolution) && (
               <p className="text-xs text-white/25 italic mb-1">
                 {Object.keys(practiceRevealedParts).length === 0
                   ? `Tap a part label (${parts.map(p => p.label).join(", ")}) to reveal its answer`
