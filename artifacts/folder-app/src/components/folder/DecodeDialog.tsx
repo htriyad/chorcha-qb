@@ -28,6 +28,15 @@ function detectInputType(input: string): "bank" | "read" {
   return "read";
 }
 
+function extractBankSlug(input: string): string | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+  const urlMatch = trimmed.match(/\/question-bank\/([A-Za-z0-9_-]+)/);
+  if (urlMatch) return urlMatch[1];
+  if (/^[A-Za-z0-9][A-Za-z0-9_-]*[A-Za-z0-9]$/.test(trimmed) && trimmed.includes("-")) return trimmed;
+  return null;
+}
+
 interface DecodeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -94,10 +103,18 @@ export function DecodeDialog({ open, onOpenChange, folderId, folderColor }: Deco
   const handleBankDecode = async () => {
     setProgress({ phase: "fetching-bank" });
     try {
+      const bankSlug = extractBankSlug(url.trim()) ?? url.trim();
       const res = await fetch(getApiUrl("api/chorcha/decode-bank"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ folderId, input: url.trim(), token: token.trim(), typeHint: apiTypeHint, replaceExisting: replaceMode }),
+        body: JSON.stringify({
+          folderId,
+          input: url.trim(),
+          bankSlug,
+          token: token.trim(),
+          typeHint: apiTypeHint,
+          replaceExisting: replaceMode,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
