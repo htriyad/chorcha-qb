@@ -94,10 +94,10 @@ export function DecodeDialog({ open, onOpenChange, folderId, folderColor }: Deco
   const handleBankDecode = async () => {
     setProgress({ phase: "fetching-bank" });
     try {
-      const res = await fetch(getApiUrl("api/chorcha/decode-bank-to-folder"), {
+      const res = await fetch(getApiUrl("api/chorcha/decode-bank"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ folderId, input: url.trim(), token: token.trim(), typeHint: apiTypeHint, replace: replaceMode }),
+        body: JSON.stringify({ folderId, input: url.trim(), token: token.trim(), typeHint: apiTypeHint, replaceExisting: replaceMode }),
       });
       const data = await res.json();
       if (!res.ok) {
