@@ -15,6 +15,37 @@ import { Search, Plus, FolderIcon, GripVertical, Check, Layers, BookOpen } from 
 import { AnimatePresence, motion, useSpring, useTransform, useInView } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 
+const titleVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.055 } },
+};
+const letterVariants = {
+  hidden: { opacity: 0, y: 28, rotate: -6, scale: 0.7 },
+  visible: { opacity: 1, y: 0, rotate: 0, scale: 1, transition: { type: "spring" as const, stiffness: 260, damping: 18 } },
+};
+
+function AnimatedTitle({ text }: { text: string }) {
+  return (
+    <motion.h1
+      variants={titleVariants}
+      initial="hidden"
+      animate="visible"
+      className="text-4xl md:text-5xl font-extrabold tracking-tight flex flex-wrap"
+      style={{
+        background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.55) 100%)",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+      }}
+    >
+      {text.split("").map((char, i) => (
+        <motion.span key={i} variants={letterVariants} style={{ display: "inline-block", whiteSpace: "pre" }}>
+          {char}
+        </motion.span>
+      ))}
+    </motion.h1>
+  );
+}
+
 function AnimatedNumber({ value }: { value: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true });
@@ -81,19 +112,7 @@ export function Home() {
       <header className="space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <motion.h1
-              initial={{ opacity: 0, y: -16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-              className="text-4xl md:text-5xl font-extrabold tracking-tight"
-              style={{
-                background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.55) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              My Folders
-            </motion.h1>
+            <AnimatedTitle text="My Folders" />
 
             {stats && (
               <motion.div
