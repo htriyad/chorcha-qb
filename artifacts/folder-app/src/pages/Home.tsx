@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   useListFolders,
   useGetFolderStats,
@@ -11,9 +11,22 @@ import { FolderFormDialog } from "@/components/folder/FolderFormDialog";
 import { DeleteFolderDialog } from "@/components/folder/DeleteFolderDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, FolderIcon, GripVertical, Check, Layers } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { Search, Plus, FolderIcon, GripVertical, Check, Layers, BookOpen } from "lucide-react";
+import { AnimatePresence, motion, useSpring, useTransform, useInView } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
+
+function AnimatedNumber({ value }: { value: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true });
+  const spring = useSpring(0, { stiffness: 60, damping: 18, restDelta: 0.5 });
+  const display = useTransform(spring, (v) => Math.round(v).toString());
+
+  useEffect(() => {
+    if (isInView) spring.set(value);
+  }, [isInView, value, spring]);
+
+  return <motion.span ref={ref}>{display}</motion.span>;
+}
 
 export function Home() {
   const [search, setSearch] = useState("");
@@ -54,14 +67,24 @@ export function Home() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-5 py-8 md:px-10 md:py-12 space-y-8">
+    <div className="max-w-4xl mx-auto px-5 py-8 md:px-10 md:py-12 space-y-8 relative">
+
+      {/* Animated background orb */}
+      <motion.div
+        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] rounded-full opacity-[0.07] blur-3xl"
+        style={{ background: "radial-gradient(ellipse, #8b5cf6 0%, #6366f1 40%, transparent 70%)" }}
+        animate={{ scale: [1, 1.12, 1], y: [0, -18, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+      />
+
       {/* Header */}
       <header className="space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <motion.h1
-              initial={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: -16 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
               className="text-4xl md:text-5xl font-extrabold tracking-tight"
               style={{
                 background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.55) 100%)",
@@ -71,24 +94,42 @@ export function Home() {
             >
               My Folders
             </motion.h1>
+
             {stats && (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.1 }}
-                className="flex items-center gap-3 mt-2"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.18, duration: 0.45 }}
+                className="flex items-center gap-3 mt-3"
               >
-                <span className="text-sm text-white/40 flex items-center gap-1.5">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold"
+                  style={{ background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.25)", color: "#a5b4fc" }}
+                >
                   <Layers className="w-3.5 h-3.5" />
-                  {stats.totalFolders} folders
-                </span>
-                <span className="w-1 h-1 rounded-full bg-white/20" />
-                <span className="text-sm text-white/40">depth {stats.maxDepth}</span>
+                  <AnimatedNumber value={stats.totalFolders} />
+                  &nbsp;folders
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold"
+                  style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)", color: "#c4b5fd" }}
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  depth&nbsp;<AnimatedNumber value={stats.maxDepth} />
+                </motion.div>
               </motion.div>
             )}
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <motion.div
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.12, duration: 0.45 }}
+            className="flex items-center gap-2 flex-shrink-0"
+          >
             {reorderMode ? (
               <>
                 <Button
@@ -122,21 +163,28 @@ export function Home() {
                     Reorder
                   </Button>
                 )}
-                <Button
-                  onClick={() => setCreateOpen(true)}
-                  className="gap-2 rounded-full shadow-lg font-semibold"
-                  style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}
-                >
-                  <Plus className="w-4 h-4" />
-                  New Folder
-                </Button>
+                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                  <Button
+                    onClick={() => setCreateOpen(true)}
+                    className="gap-2 rounded-full shadow-lg font-semibold"
+                    style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}
+                  >
+                    <Plus className="w-4 h-4" />
+                    New Folder
+                  </Button>
+                </motion.div>
               </>
             )}
-          </div>
+          </motion.div>
         </div>
 
         {!reorderMode && (
-          <div className="relative">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.22, duration: 0.4 }}
+            className="relative"
+          >
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
             <Input
               placeholder="Search folders..."
@@ -145,7 +193,7 @@ export function Home() {
               onChange={(e) => setSearch(e.target.value)}
               data-testid="input-search"
             />
-          </div>
+          </motion.div>
         )}
 
         {reorderMode && (
@@ -164,7 +212,12 @@ export function Home() {
       {isLoading ? (
         <div className="grid grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-36 rounded-2xl bg-white/4 animate-pulse border border-white/5" />
+            <motion.div
+              key={i}
+              className="h-36 rounded-2xl bg-white/4 border border-white/5"
+              animate={{ opacity: [0.4, 0.7, 0.4] }}
+              transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.15 }}
+            />
           ))}
         </div>
       ) : displayFolders.length === 0 ? (
@@ -173,12 +226,14 @@ export function Home() {
           animate={{ opacity: 1, scale: 1 }}
           className="flex flex-col items-center justify-center py-24 text-center space-y-5"
         >
-          <div
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             className="w-20 h-20 rounded-3xl flex items-center justify-center"
             style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))", border: "1px solid rgba(99,102,241,0.2)" }}
           >
             <FolderIcon className="w-10 h-10 text-indigo-400/60" strokeWidth={1.5} />
-          </div>
+          </motion.div>
           <div>
             <h3 className="text-xl font-bold text-white/80">No folders yet</h3>
             <p className="text-white/35 max-w-xs mt-2 text-sm leading-relaxed">
@@ -186,15 +241,22 @@ export function Home() {
             </p>
           </div>
           {!search && (
-            <Button onClick={() => setCreateOpen(true)} className="rounded-full gap-2" style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-              <Plus className="w-4 h-4" />
-              Create First Folder
-            </Button>
+            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+              <Button onClick={() => setCreateOpen(true)} className="rounded-full gap-2" style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+                <Plus className="w-4 h-4" />
+                Create First Folder
+              </Button>
+            </motion.div>
           )}
         </motion.div>
       ) : (
         <AnimatePresence mode="popLayout">
-          <div className="grid grid-cols-2 gap-4">
+          <motion.div
+            className="grid grid-cols-2 gap-4"
+            initial="hidden"
+            animate="visible"
+            variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
+          >
             {displayFolders.map((folder, idx) => (
               <FolderCard
                 key={folder.id}
@@ -209,7 +271,7 @@ export function Home() {
                 isLast={idx === displayFolders.length - 1}
               />
             ))}
-          </div>
+          </motion.div>
         </AnimatePresence>
       )}
 
