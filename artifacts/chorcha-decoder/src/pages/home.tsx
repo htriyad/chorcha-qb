@@ -428,21 +428,29 @@ async function saveAiToDb(args: {
   cqType: string | null;
   aiText: string;
 }): Promise<void> {
-  await fetch(getApiUrl("api/chorcha/save-ai"), {
+  const res = await fetch(getApiUrl("api/chorcha/save-ai"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ chorchaId: args.chorchaId, cqType: args.cqType, aiText: args.aiText }),
   });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error || `save-ai failed with status ${res.status}`);
+  }
 }
 
 async function patchQuestion(chorchaId: string, patch: QuestionPatch, authToken?: string | null): Promise<void> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
-  await fetch(getApiUrl(`api/chorcha/questions/${chorchaId}`), {
+  const res = await fetch(getApiUrl(`api/chorcha/questions/${chorchaId}`), {
     method: "PATCH",
     headers,
     body: JSON.stringify(patch),
   });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error || `patch failed with status ${res.status}`);
+  }
 }
 
 // ─── MCQ AI Solution ──────────────────────────────────────────────────────────

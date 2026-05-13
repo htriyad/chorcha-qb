@@ -6,7 +6,12 @@ import { useAuth } from "@/contexts/AuthContext";
 export function AppNav() {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
-  const [loc] = useLocation();
+  const [loc, navigate] = useLocation();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   const navLink = (href: string, icon: React.ReactNode, label: string) => {
     const active = href === "/" ? loc === "/" : loc.startsWith(href);
@@ -80,7 +85,7 @@ export function AppNav() {
               </div>
               <button
                 type="button"
-                onClick={logout}
+                onClick={handleLogout}
                 className="p-1.5 rounded-lg hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
                 title="Sign out"
               >
