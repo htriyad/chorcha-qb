@@ -76,7 +76,6 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  /* Deep space dark background */
   --background: 240 10% 4%;
   --foreground: 0 0% 98%;
 
@@ -147,7 +146,75 @@
   }
 }
 
-/* Dark-mode safe table rendering for chorcha HTML tables */
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* ── Text selection ── */
+::selection {
+  background: rgba(99, 102, 241, 0.35);
+  color: #fff;
+}
+
+/* ── Focus rings ── */
+:focus-visible {
+  outline: none;
+}
+
+/* ── Keyframes ── */
+@keyframes shimmer-sweep {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%);  }
+}
+
+@keyframes ambient-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(1);   }
+  50%       { opacity: 0;    transform: scale(1.55); }
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes glow-badge {
+  0%, 100% { box-shadow: 0 0 0 0 var(--badge-glow, rgba(99, 102, 241, 0.4)); }
+  50%       { box-shadow: 0 0 0 6px rgba(0, 0, 0, 0); }
+}
+
+/* ── Utilities ── */
+.animate-ambient-pulse {
+  animation: ambient-pulse 2.8s ease-in-out infinite;
+}
+
+.page-enter {
+  animation: page-enter 0.45s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Dark-mode safe table rendering for chorcha HTML tables ── */
 .chorcha-table table {
   border-collapse: collapse;
   width: 100%;
