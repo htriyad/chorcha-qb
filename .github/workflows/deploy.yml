@@ -33,7 +33,5 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          cd /tmp
-          node $GITHUB_WORKSPACE/artifacts/folder-app/node_modules/.bin/wrangler \
-            pages deploy $GITHUB_WORKSPACE/artifacts/folder-app/dist/public \
-            --project-name=examly --branch=main
+          cd artifacts/folder-app
+          node_modules/.bin/wrangler pages deploy dist/public --project-name=examly --branch=main
